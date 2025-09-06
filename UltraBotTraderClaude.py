@@ -1,24 +1,3 @@
-
-import yfinance as yf
-import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
-from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple, Callable
-import warnings
-from streamlit_autorefresh import st_autorefresh
-import talib
-from collections import deque
-import time
-import requests
-import json
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-import logging
-from abc import ABC, abstractmethod
-from scipy import stats
-from sklearn.preprocessing import StandardScaler
-
 @staticmethod
     def _calculate_regime_indicators(df: pd.DataFrame) -> Dict:
         """Calculate regime-specific indicators with robust error handling"""
@@ -76,7 +55,52 @@ from sklearn.preprocessing import StandardScaler
                         vol_lag0 = valid_vol.iloc[:-1]
                         vol_lag1 = valid_vol.iloc[1:]
                         
-                        if lenimport streamlit as st
+                        if len(vol_lag0) > 0 and len(vol_lag1) > 0 and len(vol_lag0) == len(vol_lag1):
+                            corr_matrix = np.corrcoef(vol_lag0.values, vol_lag1.values)
+                            if corr_matrix.shape == (2, 2):
+                                vol_clustering = corr_matrix[0, 1]
+                                result['volatility_clustering'] = float(vol_clustering) if np.isfinite(vol_clustering) else 0.0
+                            else:
+                                result['volatility_clustering'] = 0.0
+                        else:
+                            result['volatility_clustering'] = 0.0
+                    else:
+                        result['volatility_clustering'] = 0.0
+                else:
+                    result['volatility_clustering'] = 0.0
+                    
+            except Exception as e:
+                logger.debug(f"Volatility clustering calculation failed: {e}")
+                result['volatility_clustering'] = 0.0
+        
+        except Exception as e:
+            logger.error(f"Error in regime indicators: {e}")
+            result = {
+                'trend_persistence': 0,
+                'volatility_clustering': 0.0
+            }
+            
+        return result
+import yfinance as yf
+import pandas as pd
+import numpy as np
+from datetime import datetime, timedelta
+from dataclasses import dataclass
+from typing import Dict, List, Optional, Tuple, Callable
+import warnings
+from streamlit_autorefresh import st_autorefresh
+import talib
+from collections import deque
+import time
+import requests
+import json
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+import logging
+from abc import ABC, abstractmethod
+from scipy import stats
+from sklearn.preprocessing import StandardScaler
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -1922,5 +1946,3 @@ class EnhancedTradingBotApp:
 if __name__ == "__main__":
     app = EnhancedTradingBotApp()
     app.run()
-
-
