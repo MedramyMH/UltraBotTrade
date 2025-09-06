@@ -2,7 +2,7 @@
 import yfinance as yf
 import pandas as pd
 import numpy as np
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta,timezone
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple, Callable
 import warnings
@@ -1960,6 +1960,7 @@ class EnhancedTradingBotApp:
 if __name__ == "__main__":
     app = EnhancedTradingBotApp()
     app.run()
+
 
 
 
