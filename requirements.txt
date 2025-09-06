@@ -4,5 +4,5 @@ plotly==6.3.0
 numpy==1.26.2
 pandas==2.1.1
 requests==2.31.0
-streamlit-autorefresh==0.0.2
-pandas-ta==0.3.65b0
+streamlit-autorefresh
+pandas-ta
