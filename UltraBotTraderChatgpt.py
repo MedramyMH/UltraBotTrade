@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 import yfinance as yf
-import talib
+import pandas_ta as ta
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 import plotly.graph_objects as go
@@ -223,14 +223,14 @@ class TechnicalAnalyzer:
         res: Dict[str, float] = {}
 
         # RSI
-        rsi = talib.RSI(close, timeperiod=14)
+        rsi = ta.RSI(close, timeperiod=14)
         rsi_last = rsi[-1] if len(rsi) else np.nan
         res['rsi'] = TechnicalAnalyzer._nan_to(rsi_last, 50.0)
         rsi_prev = rsi[-5] if len(rsi) > 5 else np.nan
         res['rsi_trend'] = TechnicalAnalyzer._nan_to(rsi_last - rsi_prev, 0.0)
 
         # MACD
-        macd, sig, hist = talib.MACD(close, fastperiod=12, slowperiod=26, signalperiod=9)
+        macd, sig, hist = ta.MACD(close, fastperiod=12, slowperiod=26, signalperiod=9)
         res['macd'] = TechnicalAnalyzer._nan_to(macd[-1] if len(macd) else np.nan, 0.0)
         res['macd_signal'] = TechnicalAnalyzer._nan_to(sig[-1] if len(sig) else np.nan, 0.0)
         res['macd_histogram'] = TechnicalAnalyzer._nan_to(hist[-1] if len(hist) else np.nan, 0.0)
@@ -238,7 +238,7 @@ class TechnicalAnalyzer:
         res['macd_trend'] = TechnicalAnalyzer._nan_to((hist[-1] - hist_prev) if len(hist) > 5 else np.nan, 0.0)
 
         # Stochastic
-        slowk, slowd = talib.STOCH(high, low, close, fastk_period=14, slowk_period=3, slowk_matype=0, slowd_period=3, slowd_matype=0)
+        slowk, slowd = ta.STOCH(high, low, close, fastk_period=14, slowk_period=3, slowk_matype=0, slowd_period=3, slowd_matype=0)
         res['stoch_k'] = TechnicalAnalyzer._nan_to(slowk[-1] if len(slowk) else np.nan, 50.0)
         res['stoch_d'] = TechnicalAnalyzer._nan_to(slowd[-1] if len(slowd) else np.nan, 50.0)
 
@@ -259,7 +259,7 @@ class TechnicalAnalyzer:
         res: Dict[str, float] = {}
 
         # Bollinger Bands
-        upper, middle, lower = talib.BBANDS(close, timeperiod=20, nbdevup=2, nbdevdn=2, matype=0)
+        upper, middle, lower = ta.BBANDS(close, timeperiod=20, nbdevup=2, nbdevdn=2, matype=0)
         last_close = float(close[-1])
         res['bb_upper'] = TechnicalAnalyzer._nan_to(upper[-1] if len(upper) else np.nan, last_close * 1.1)
         res['bb_middle'] = TechnicalAnalyzer._nan_to(middle[-1] if len(middle) else np.nan, last_close)
@@ -268,10 +268,10 @@ class TechnicalAnalyzer:
         res['bb_position'] = safe_divide(last_close - res['bb_lower'], bb_width, 0.5)
 
         # ADX & CCI
-        adx = talib.ADX(high, low, close, timeperiod=14)
+        adx = ta.ADX(high, low, close, timeperiod=14)
         res['adx'] = TechnicalAnalyzer._nan_to(adx[-1] if len(adx) else np.nan, 0.0)
 
-        cci = talib.CCI(high, low, close, timeperiod=14)
+        cci = ta.CCI(high, low, close, timeperiod=14)
         res['cci'] = TechnicalAnalyzer._nan_to(cci[-1] if len(cci) else np.nan, 0.0)
 
         return res
@@ -280,7 +280,7 @@ class TechnicalAnalyzer:
     def _calc_volatility(close: np.ndarray, high: np.ndarray, low: np.ndarray) -> Dict:
         res: Dict[str, float] = {}
         # ATR
-        atr = talib.ATR(high, low, close, timeperiod=14)
+        atr = ta.ATR(high, low, close, timeperiod=14)
         last_close = float(close[-1])
         res['atr'] = TechnicalAnalyzer._nan_to(atr[-1] if len(atr) else np.nan, last_close * 0.01)
 
@@ -296,9 +296,9 @@ class TechnicalAnalyzer:
     def _calc_volume(close: np.ndarray, high: np.ndarray, low: np.ndarray, volume: Optional[np.ndarray]) -> Dict:
         res: Dict[str, float] = {}
         if volume is not None and np.nansum(volume) > 0:
-            obv = talib.OBV(close, volume)
+            obv = ta.OBV(close, volume)
             res['obv'] = TechnicalAnalyzer._nan_to(obv[-1] if len(obv) else np.nan, 0.0)
-            vol_sma = talib.SMA(volume, timeperiod=20)
+            vol_sma = ta.SMA(volume, timeperiod=20)
             vol_sma_last = vol_sma[-1] if len(vol_sma) else np.nan
             if vol_sma_last and not np.isnan(vol_sma_last) and vol_sma_last > 0:
                 res['volume_trend'] = float(volume[-1] / vol_sma_last)
@@ -811,7 +811,7 @@ class ChartVisualizer:
             fig.add_trace(go.Bar(x=df.index, y=df['Volume'], name='Volume', marker_color=colors), row=2, col=1)
 
         # RSI
-        rsi = talib.RSI(np.asarray(df['Close'], dtype=float), timeperiod=14)
+        rsi = ta.RSI(np.asarray(df['Close'], dtype=float), timeperiod=14)
         fig.add_trace(go.Scatter(x=df.index, y=rsi, name='RSI'), row=3, col=1)
         # RSI bands via shapes
         fig.add_hrect(y0=70, y1=70, line_width=1, line_dash="dash", row=3, col=1)
@@ -819,7 +819,7 @@ class ChartVisualizer:
         fig.add_hrect(y0=50, y1=50, line_width=1, line_dash="dot", row=3, col=1)
 
         # MACD
-        macd, macd_sig, macd_hist = talib.MACD(np.asarray(df['Close'], dtype=float))
+        macd, macd_sig, macd_hist = ta.MACD(np.asarray(df['Close'], dtype=float))
         fig.add_trace(go.Bar(x=df.index, y=macd_hist, name='MACD Hist'), row=4, col=1)
         fig.add_trace(go.Scatter(x=df.index, y=macd, name='MACD'), row=4, col=1)
         fig.add_trace(go.Scatter(x=df.index, y=macd_sig, name='Signal'), row=4, col=1)
@@ -1097,3 +1097,4 @@ class TradingBotApp:
 if __name__ == "__main__":
     app = TradingBotApp()
     app.run()
+
