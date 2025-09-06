@@ -706,39 +706,42 @@ class StatisticalTechnicalAnalyzer:
         except:
             return 0.5  # Random walk default
     
-    @staticmethod
-    def _calculate_regime_indicators(df: pd.DataFrame) -> Dict:
-        """Calculate regime-specific indicators"""
-        result = {}
+    # @staticmethod
+    # def _calculate_regime_indicators(df: pd.DataFrame) -> Dict:
+    #     """Calculate regime-specific indicators"""
+    #     result = {}
         
-        if len(df) < 50:
-            return result
+    #     if len(df) < 50:
+    #         return result
             
-        # Trend persistence
-        close_prices = df['Close'].values
-        ma_20 = df['Close'].rolling(20).mean()
+    #     # Trend persistence
+    #     close_prices = df['Close'].values
+    #     ma_20 = df['Close'].rolling(20, min_periods=1).mean()
         
-        # Count consecutive periods above/below MA
-        above_ma = close_prices > ma_20
-        trend_persistence = 0
-        current_trend = above_ma[-1]
+    #     # Count consecutive periods above/below MA
+    #     above_ma = (df['Close'] > ma_20).fillna(False).values
+    #     trend_persistence = 0
+    #     current_trend = above_ma[-1]
         
-        for i in range(len(above_ma) - 1, -1, -1):
-            if above_ma[i] == current_trend:
-                trend_persistence += 1
-            else:
-                break
+    #     for i in range(len(above_ma) - 1, -1, -1):
+    #         if above_ma[i] == current_trend:
+    #             trend_persistence += 1
+    #         else:
+    #             break
                 
-        result['trend_persistence'] = trend_persistence
+    #     result['trend_persistence'] = trend_persistence
         
-        # Volatility clustering (GARCH-like effect)
-        returns = df['Close'].pct_change().dropna()
-        if len(returns) > 20:
-            vol_20 = returns.rolling(20).std()
-            vol_clustering = np.corrcoef(vol_20[:-1].dropna(), vol_20[1:].dropna())[0, 1]
-            result['volatility_clustering'] = float(vol_clustering) if not np.isnan(vol_clustering) else 0.0
-        
-        return result
+    #     # Volatility clustering (GARCH-like effect)
+    #     returns = df['Close'].pct_change()
+    #     vol_20 = returns.rolling(20, min_periods=10).std()
+    #     valid_vol = vol_20.dropna().values
+    #     if len(valid_vol) > 1:
+    #         vol_lag0 = valid_vol[:-1]
+    #         vol_lag1 = valid_vol[1:]
+    #         vol_clustering = np.corrcoef(vol_lag0, vol_lag1)[0, 1]
+    #         result['volatility_clustering'] = 0.0 if np.isnan(vol_clustering) else float(vol_clustering)
+
+    #     return result
 
 # =============================
 # Enhanced Trading Engine with Backtesting
@@ -1957,6 +1960,7 @@ class EnhancedTradingBotApp:
 if __name__ == "__main__":
     app = EnhancedTradingBotApp()
     app.run()
+
 
 
 
