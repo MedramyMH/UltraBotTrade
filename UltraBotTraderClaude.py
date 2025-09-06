@@ -1409,7 +1409,24 @@ class EnhancedTradingBotApp:
             st.session_state.portfolio_value = 100000
         if 'trade_history' not in st.session_state:
             st.session_state.trade_history = []
-    
+    def format_simple_signal(symbol, signal) -> str:
+        entry_low, entry_high = compute_entry_zone(
+            signal.entry_price,
+            signal.key_indicators.get('atr', signal.market_price * 0.01),
+            signal.confidence
+        )
+        return (
+            f"[Signal] {signal.signal_type.replace('_', ' ')}\n"
+            f"[Asset] {symbol}\n"
+            f"[Timeframe] 1m\n"
+            f"[Contract Period] 15 min\n"
+            f"[Entry Zone] {entry_low:.2f} – {entry_high:.2f}\n"
+            f"[Target] {signal.target_price:.2f}\n"
+            f"[Stop Loss] {signal.stop_loss:.2f}\n"
+            f"[Confidence] {int(signal.confidence*100)}%\n"
+            f"[Reasoning] {signal.signal_reasons[0] if signal.signal_reasons else 'N/A'}"
+        )
+
     def render_enhanced_sidebar(self):
         """Enhanced sidebar with portfolio management"""
         st.sidebar.header("🛠️ Enhanced Configuration")
@@ -1608,241 +1625,241 @@ class EnhancedTradingBotApp:
         
         return filtered
     
-    def render_enhanced_signal_details(self, symbol, signal, data, position_sizing, config):
-        """Render enhanced signal information"""
-        asset = pretty_asset(symbol)
+    # def render_enhanced_signal_details(self, symbol, signal, data, position_sizing, config):
+    #     """Render enhanced signal information"""
+    #     asset = pretty_asset(symbol)
         
-        # Color coding based on signal strength and statistical significance
-        if signal.signal_type in ["STRONG_BUY", "STRONG_SELL"]:
-            color = "green" if "BUY" in signal.signal_type else "red"
-            intensity = "Strong"
-        elif signal.signal_type in ["BUY", "SELL"]:
-            color = "blue" if "BUY" in signal.signal_type else "orange"
-            intensity = "Moderate"
-        else:
-            color = "gray"
-            intensity = "Neutral"
+    #     # Color coding based on signal strength and statistical significance
+    #     if signal.signal_type in ["STRONG_BUY", "STRONG_SELL"]:
+    #         color = "green" if "BUY" in signal.signal_type else "red"
+    #         intensity = "Strong"
+    #     elif signal.signal_type in ["BUY", "SELL"]:
+    #         color = "blue" if "BUY" in signal.signal_type else "orange"
+    #         intensity = "Moderate"
+    #     else:
+    #         color = "gray"
+    #         intensity = "Neutral"
         
-        # Statistical significance indicator
-        stat_sig = "📈" if signal.key_indicators.get('returns_normal', False) else "⚠️"
+    #     # Statistical significance indicator
+    #     stat_sig = "📈" if signal.key_indicators.get('returns_normal', False) else "⚠️"
         
-        with st.expander(
-            f"{stat_sig} {asset} - {intensity} {signal.signal_type} "
-            f"(Conf: {signal.confidence*100:.0f}%, Kelly: {signal.kelly_fraction:.2f})", 
-            expanded=True
-        ):
+    #     with st.expander(
+    #         f"{stat_sig} {asset} - {intensity} {signal.signal_type} "
+    #         f"(Conf: {signal.confidence*100:.0f}%, Kelly: {signal.kelly_fraction:.2f})", 
+    #         expanded=True
+    #     ):
             
-            tab1, tab2, tab3, tab4 = st.tabs([
-                "Signal Analysis", "Position Sizing", "Risk Analytics", "Statistical Tests"
-            ])
+    #         tab1, tab2, tab3, tab4 = st.tabs([
+    #             "Signal Analysis", "Position Sizing", "Risk Analytics", "Statistical Tests"
+    #         ])
             
-            with tab1:
-                self._render_signal_analysis_tab(symbol, signal, data, config)
+    #         with tab1:
+    #             self._render_signal_analysis_tab(symbol, signal, data, config)
                 
-            with tab2:
-                self._render_position_sizing_tab(signal, position_sizing, config)
+    #         with tab2:
+    #             self._render_position_sizing_tab(signal, position_sizing, config)
                 
-            with tab3:
-                self._render_risk_analytics_tab(signal, data)
+    #         with tab3:
+    #             self._render_risk_analytics_tab(signal, data)
                 
-            with tab4:
-                self._render_statistical_tests_tab(signal, data)
+    #         with tab4:
+    #             self._render_statistical_tests_tab(signal, data)
     
-    def _render_signal_analysis_tab(self, symbol, signal, data, config):
-        """Render comprehensive signal analysis"""
-        col1, col2 = st.columns(2)
+    # def _render_signal_analysis_tab(self, symbol, signal, data, config):
+    #     """Render comprehensive signal analysis"""
+    #     col1, col2 = st.columns(2)
         
-        with col1:
-            st.subheader("Signal Details")
+    #     with col1:
+    #         st.subheader("Signal Details")
             
-            signal_info = f"""
-            **Asset**: {pretty_asset(symbol)}
-            **Signal**: {signal.signal_type}
-            **Strategy**: {signal.strategy}
-            **Time Horizon**: {signal.time_horizon}
-            **Entry Price**: ${signal.entry_price:.5f}
-            **Target**: ${signal.target_price:.5f}
-            **Stop Loss**: ${signal.stop_loss:.5f}
-            **Risk/Reward**: {signal.risk_reward_ratio:.2f}
-            **Expected Return**: {signal.expected_return*100:.2f}%
-            **Win Probability**: {signal.win_probability*100:.1f}%
-            """
-            st.markdown(signal_info)
+    #         signal_info = f"""
+    #         **Asset**: {pretty_asset(symbol)}
+    #         **Signal**: {signal.signal_type}
+    #         **Strategy**: {signal.strategy}
+    #         **Time Horizon**: {signal.time_horizon}
+    #         **Entry Price**: ${signal.entry_price:.5f}
+    #         **Target**: ${signal.target_price:.5f}
+    #         **Stop Loss**: ${signal.stop_loss:.5f}
+    #         **Risk/Reward**: {signal.risk_reward_ratio:.2f}
+    #         **Expected Return**: {signal.expected_return*100:.2f}%
+    #         **Win Probability**: {signal.win_probability*100:.1f}%
+    #         """
+    #         st.markdown(signal_info)
             
-            # Entry zone calculation
-            atr = signal.key_indicators.get('atr', signal.market_price * 0.01)
-            entry_low, entry_high = compute_entry_zone(signal.entry_price, atr, signal.confidence)
-            st.info(f"**Entry Zone**: ${entry_low:.5f} - ${entry_high:.5f}")
+    #         # Entry zone calculation
+    #         atr = signal.key_indicators.get('atr', signal.market_price * 0.01)
+    #         entry_low, entry_high = compute_entry_zone(signal.entry_price, atr, signal.confidence)
+    #         st.info(f"**Entry Zone**: ${entry_low:.5f} - ${entry_high:.5f}")
             
-        with col2:
-            st.subheader("Key Indicators")
+    #     with col2:
+    #         st.subheader("Key Indicators")
             
-            # Create metrics grid
-            metrics_col1, metrics_col2 = st.columns(2)
+    #         # Create metrics grid
+    #         metrics_col1, metrics_col2 = st.columns(2)
             
-            with metrics_col1:
-                st.metric("RSI", f"{signal.key_indicators.get('rsi', 50):.1f}")
-                st.metric("MACD Hist", f"{signal.key_indicators.get('macd_histogram', 0):.4f}")
-                st.metric("ADX", f"{signal.key_indicators.get('adx', 20):.1f}")
-                st.metric("Volatility", f"{signal.key_indicators.get('volatility', 20):.1f}%")
+    #         with metrics_col1:
+    #             st.metric("RSI", f"{signal.key_indicators.get('rsi', 50):.1f}")
+    #             st.metric("MACD Hist", f"{signal.key_indicators.get('macd_histogram', 0):.4f}")
+    #             st.metric("ADX", f"{signal.key_indicators.get('adx', 20):.1f}")
+    #             st.metric("Volatility", f"{signal.key_indicators.get('volatility', 20):.1f}%")
                 
-            with metrics_col2:
-                st.metric("BB Position", f"{signal.key_indicators.get('bb_position', 0.5):.2f}")
-                st.metric("Volume Ratio", f"{signal.key_indicators.get('volume_ratio', 1.0):.2f}")
-                st.metric("Momentum 5D", f"{signal.key_indicators.get('momentum_5', 0):.2f}%")
-                st.metric("Trend Persist", f"{signal.key_indicators.get('trend_persistence', 0)}")
+    #         with metrics_col2:
+    #             st.metric("BB Position", f"{signal.key_indicators.get('bb_position', 0.5):.2f}")
+    #             st.metric("Volume Ratio", f"{signal.key_indicators.get('volume_ratio', 1.0):.2f}")
+    #             st.metric("Momentum 5D", f"{signal.key_indicators.get('momentum_5', 0):.2f}%")
+    #             st.metric("Trend Persist", f"{signal.key_indicators.get('trend_persistence', 0)}")
         
-        # Reasoning
-        st.subheader("Signal Reasoning")
-        for i, reason in enumerate(signal.signal_reasons[:5], 1):
-            st.write(f"{i}. {reason}")
+    #     # Reasoning
+    #     st.subheader("Signal Reasoning")
+    #     for i, reason in enumerate(signal.signal_reasons[:5], 1):
+    #         st.write(f"{i}. {reason}")
     
-    def _render_position_sizing_tab(self, signal, position_sizing, config):
-        """Render position sizing analysis"""
-        st.subheader("Position Sizing Analysis")
+    # def _render_position_sizing_tab(self, signal, position_sizing, config):
+    #     """Render position sizing analysis"""
+    #     st.subheader("Position Sizing Analysis")
         
-        # Position size comparison
-        col1, col2, col3 = st.columns(3)
+    #     # Position size comparison
+    #     col1, col2, col3 = st.columns(3)
         
-        with col1:
-            st.metric(
-                "Risk-Based Size", 
-                f"{position_sizing.position_size:.2f}",
-                delta=f"${position_sizing.position_value:,.0f}"
-            )
+    #     with col1:
+    #         st.metric(
+    #             "Risk-Based Size", 
+    #             f"{position_sizing.position_size:.2f}",
+    #             delta=f"${position_sizing.position_value:,.0f}"
+    #         )
             
-        with col2:
-            st.metric(
-                "Kelly Size", 
-                f"{position_sizing.kelly_size:.2f}",
-                delta=f"Fraction: {signal.kelly_fraction:.3f}"
-            )
+    #     with col2:
+    #         st.metric(
+    #             "Kelly Size", 
+    #             f"{position_sizing.kelly_size:.2f}",
+    #             delta=f"Fraction: {signal.kelly_fraction:.3f}"
+    #         )
             
-        with col3:
-            st.metric(
-                "Vol-Adjusted Size", 
-                f"{position_sizing.volatility_adjusted_size:.2f}",
-                delta="Recommended"
-            )
+    #     with col3:
+    #         st.metric(
+    #             "Vol-Adjusted Size", 
+    #             f"{position_sizing.volatility_adjusted_size:.2f}",
+    #             delta="Recommended"
+    #         )
         
-        # Risk metrics
-        st.subheader("Risk Metrics")
+    #     # Risk metrics
+    #     st.subheader("Risk Metrics")
         
-        risk_col1, risk_col2 = st.columns(2)
+    #     risk_col1, risk_col2 = st.columns(2)
         
-        with risk_col1:
-            st.write("**Portfolio Impact:**")
-            st.write(f"• Position Weight: {position_sizing.position_percent:.2f}%")
-            st.write(f"• Risk Amount: ${position_sizing.risk_amount:,.0f}")
-            st.write(f"• Max Adverse Excursion: {signal.max_adverse_excursion*100:.2f}%")
+    #     with risk_col1:
+    #         st.write("**Portfolio Impact:**")
+    #         st.write(f"• Position Weight: {position_sizing.position_percent:.2f}%")
+    #         st.write(f"• Risk Amount: ${position_sizing.risk_amount:,.0f}")
+    #         st.write(f"• Max Adverse Excursion: {signal.max_adverse_excursion*100:.2f}%")
             
-        with risk_col2:
-            st.write("**Trade Expectations:**")
-            st.write(f"• Expected Return: {signal.expected_return*100:.2f}%")
-            st.write(f"• Win Probability: {signal.win_probability*100:.1f}%")
-            st.write(f"• Expected Value: ${position_sizing.position_value * signal.expected_return:,.0f}")
+    #     with risk_col2:
+    #         st.write("**Trade Expectations:**")
+    #         st.write(f"• Expected Return: {signal.expected_return*100:.2f}%")
+    #         st.write(f"• Win Probability: {signal.win_probability*100:.1f}%")
+    #         st.write(f"• Expected Value: ${position_sizing.position_value * signal.expected_return:,.0f}")
         
-        # Position size recommendations
-        if position_sizing.position_percent > 5:
-            st.error(f"⚠️ Position size ({position_sizing.position_percent:.1f}%) exceeds recommended maximum (5%)")
-        elif position_sizing.position_percent > 3:
-            st.warning(f"⚠️ Large position size ({position_sizing.position_percent:.1f}%) - monitor carefully")
-        else:
-            st.success(f"✅ Position size ({position_sizing.position_percent:.1f}%) within safe limits")
+    #     # Position size recommendations
+    #     if position_sizing.position_percent > 5:
+    #         st.error(f"⚠️ Position size ({position_sizing.position_percent:.1f}%) exceeds recommended maximum (5%)")
+    #     elif position_sizing.position_percent > 3:
+    #         st.warning(f"⚠️ Large position size ({position_sizing.position_percent:.1f}%) - monitor carefully")
+    #     else:
+    #         st.success(f"✅ Position size ({position_sizing.position_percent:.1f}%) within safe limits")
     
-    def _render_risk_analytics_tab(self, signal, data):
-        """Render risk analytics"""
-        st.subheader("Risk Analytics")
+    # def _render_risk_analytics_tab(self, signal, data):
+    #     """Render risk analytics"""
+    #     st.subheader("Risk Analytics")
         
-        # Value at Risk calculation
-        returns = data.get('returns', [])
-        if len(returns) > 30:
-            var_95 = np.percentile(returns, 5) * 100
-            var_99 = np.percentile(returns, 1) * 100
+    #     # Value at Risk calculation
+    #     returns = data.get('returns', [])
+    #     if len(returns) > 30:
+    #         var_95 = np.percentile(returns, 5) * 100
+    #         var_99 = np.percentile(returns, 1) * 100
             
-            col1, col2 = st.columns(2)
-            with col1:
-                st.metric("VaR (95%)", f"{var_95:.2f}%", delta="Daily")
-            with col2:
-                st.metric("VaR (99%)", f"{var_99:.2f}%", delta="Daily")
+    #         col1, col2 = st.columns(2)
+    #         with col1:
+    #             st.metric("VaR (95%)", f"{var_95:.2f}%", delta="Daily")
+    #         with col2:
+    #             st.metric("VaR (99%)", f"{var_99:.2f}%", delta="Daily")
         
-        # Correlation analysis (simplified)
-        st.write("**Risk Factors:**")
-        volatility = signal.key_indicators.get('volatility', 20)
-        if volatility > 30:
-            st.error(f"🔴 High volatility risk ({volatility:.1f}%)")
-        elif volatility > 20:
-            st.warning(f"🟡 Moderate volatility ({volatility:.1f}%)")
-        else:
-            st.success(f"🟢 Low volatility ({volatility:.1f}%)")
+    #     # Correlation analysis (simplified)
+    #     st.write("**Risk Factors:**")
+    #     volatility = signal.key_indicators.get('volatility', 20)
+    #     if volatility > 30:
+    #         st.error(f"🔴 High volatility risk ({volatility:.1f}%)")
+    #     elif volatility > 20:
+    #         st.warning(f"🟡 Moderate volatility ({volatility:.1f}%)")
+    #     else:
+    #         st.success(f"🟢 Low volatility ({volatility:.1f}%)")
         
-        # Drawdown analysis
-        hurst = signal.key_indicators.get('hurst_exponent', 0.5)
-        if hurst > 0.6:
-            st.info("📈 Trending behavior - potential for momentum continuation")
-        elif hurst < 0.4:
-            st.info("🔄 Mean-reverting behavior - expect reversals")
-        else:
-            st.info("🎲 Random walk behavior - neutral persistence")
+    #     # Drawdown analysis
+    #     hurst = signal.key_indicators.get('hurst_exponent', 0.5)
+    #     if hurst > 0.6:
+    #         st.info("📈 Trending behavior - potential for momentum continuation")
+    #     elif hurst < 0.4:
+    #         st.info("🔄 Mean-reverting behavior - expect reversals")
+    #     else:
+    #         st.info("🎲 Random walk behavior - neutral persistence")
     
-    def _render_statistical_tests_tab(self, signal, data):
-        """Render statistical test results"""
-        st.subheader("Statistical Analysis")
+    # def _render_statistical_tests_tab(self, signal, data):
+    #     """Render statistical test results"""
+    #     st.subheader("Statistical Analysis")
         
-        indicators = signal.key_indicators
+    #     indicators = signal.key_indicators
         
-        # Normality test
-        if 'shapiro_p_value' in indicators:
-            p_value = indicators['shapiro_p_value']
-            is_normal = p_value > 0.05
+    #     # Normality test
+    #     if 'shapiro_p_value' in indicators:
+    #         p_value = indicators['shapiro_p_value']
+    #         is_normal = p_value > 0.05
             
-            st.write("**Return Distribution:**")
-            if is_normal:
-                st.success(f"✅ Returns appear normal (p-value: {p_value:.4f})")
-            else:
-                st.warning(f"⚠️ Non-normal returns (p-value: {p_value:.4f})")
+    #         st.write("**Return Distribution:**")
+    #         if is_normal:
+    #             st.success(f"✅ Returns appear normal (p-value: {p_value:.4f})")
+    #         else:
+    #             st.warning(f"⚠️ Non-normal returns (p-value: {p_value:.4f})")
         
-        # Autocorrelation
-        if 'autocorrelation_lag1' in indicators:
-            autocorr = indicators['autocorrelation_lag1']
-            st.write(f"**Autocorrelation (Lag-1):** {autocorr:.3f}")
+    #     # Autocorrelation
+    #     if 'autocorrelation_lag1' in indicators:
+    #         autocorr = indicators['autocorrelation_lag1']
+    #         st.write(f"**Autocorrelation (Lag-1):** {autocorr:.3f}")
             
-            if abs(autocorr) > 0.1:
-                st.info("📊 Significant autocorrelation detected - momentum/reversal patterns present")
+    #         if abs(autocorr) > 0.1:
+    #             st.info("📊 Significant autocorrelation detected - momentum/reversal patterns present")
         
-        # Distribution moments
-        col1, col2 = st.columns(2)
+    #     # Distribution moments
+    #     col1, col2 = st.columns(2)
         
-        with col1:
-            if 'returns_skewness' in indicators:
-                skew = indicators['returns_skewness']
-                st.metric("Skewness", f"{skew:.2f}")
-                if skew > 0.5:
-                    st.caption("Right-tailed (more extreme positive returns)")
-                elif skew < -0.5:
-                    st.caption("Left-tailed (more extreme negative returns)")
+    #     with col1:
+    #         if 'returns_skewness' in indicators:
+    #             skew = indicators['returns_skewness']
+    #             st.metric("Skewness", f"{skew:.2f}")
+    #             if skew > 0.5:
+    #                 st.caption("Right-tailed (more extreme positive returns)")
+    #             elif skew < -0.5:
+    #                 st.caption("Left-tailed (more extreme negative returns)")
                     
-        with col2:
-            if 'returns_kurtosis' in indicators:
-                kurt = indicators['returns_kurtosis']
-                st.metric("Kurtosis", f"{kurt:.2f}")
-                if kurt > 3:
-                    st.caption("Fat tails (higher crash risk)")
+    #     with col2:
+    #         if 'returns_kurtosis' in indicators:
+    #             kurt = indicators['returns_kurtosis']
+    #             st.metric("Kurtosis", f"{kurt:.2f}")
+    #             if kurt > 3:
+    #                 st.caption("Fat tails (higher crash risk)")
         
-        # Hurst Exponent analysis
-        if 'hurst_exponent' in indicators:
-            hurst = indicators['hurst_exponent']
-            st.write(f"**Hurst Exponent:** {hurst:.3f}")
+    #     # Hurst Exponent analysis
+    #     if 'hurst_exponent' in indicators:
+    #         hurst = indicators['hurst_exponent']
+    #         st.write(f"**Hurst Exponent:** {hurst:.3f}")
             
-            if hurst > 0.5:
-                st.info("🔄 Mean-reverting time series")
-                st.caption("Prices tend to reverse after moves")
-            elif hurst < 0.5:
-                st.info("📈 Trending time series") 
-                st.caption("Prices show momentum persistence")
-            else:
-                st.info("🎲 Random walk")
-                st.caption("No predictable pattern")
+    #         if hurst > 0.5:
+    #             st.info("🔄 Mean-reverting time series")
+    #             st.caption("Prices tend to reverse after moves")
+    #         elif hurst < 0.5:
+    #             st.info("📈 Trending time series") 
+    #             st.caption("Prices show momentum persistence")
+    #         else:
+    #             st.info("🎲 Random walk")
+    #             st.caption("No predictable pattern")
     
     def render_portfolio_analytics(self, signals, config):
         """Render comprehensive portfolio analytics"""
@@ -1944,8 +1961,11 @@ class EnhancedTradingBotApp:
         if qualified_signals:
             st.header(f"Trading Signals ({len(qualified_signals)})")
             
+            # for symbol, signal, data, position_sizing in qualified_signals:
+            #     self.render_enhanced_signal_details(symbol, signal, data, position_sizing, config)
             for symbol, signal, data, position_sizing in qualified_signals:
-                self.render_enhanced_signal_details(symbol, signal, data, position_sizing, config)
+                 st.text(format_simple_signal(symbol, signal))
+
         
         # Portfolio analytics
         self.render_portfolio_analytics(qualified_signals, config)
@@ -1964,6 +1984,7 @@ class EnhancedTradingBotApp:
 if __name__ == "__main__":
     app = EnhancedTradingBotApp()
     app.run()
+
 
 
 
