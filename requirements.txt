@@ -8,3 +8,4 @@ streamlit-autorefresh
 pandas-ta
 ta-lib
 scipy
+scikit-learn
