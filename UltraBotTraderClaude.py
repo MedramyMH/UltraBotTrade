@@ -19,6 +19,13 @@ from abc import ABC, abstractmethod
 from scipy import stats
 from sklearn.preprocessing import StandardScaler
 
+
+st.set_page_config(
+    page_title="ULTIMATE Trading AI - Pro Edition",
+    page_icon="🚀",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -1950,5 +1957,6 @@ class EnhancedTradingBotApp:
 if __name__ == "__main__":
     app = EnhancedTradingBotApp()
     app.run()
+
 
 
