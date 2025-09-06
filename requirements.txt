@@ -1,0 +1,8 @@
+streamlit
+yfinance
+plotly
+talib-binary
+numpy
+pandas
+requests
+streamlit-autorefresh
