@@ -1416,16 +1416,17 @@ class EnhancedTradingBotApp:
             signal.confidence
         )
         return (
-            f"[Signal] {signal.signal_type.replace('_', ' ')}\n"
+            f"[Signal] {signal.signal_type.replace('_', ' ').upper()}\n"
             f"[Asset] {symbol}\n"
             f"[Timeframe] 1m\n"
             f"[Contract Period] 15 min\n"
             f"[Entry Zone] {entry_low:.2f} – {entry_high:.2f}\n"
             f"[Target] {signal.target_price:.2f}\n"
             f"[Stop Loss] {signal.stop_loss:.2f}\n"
-            f"[Confidence] {int(signal.confidence*100)}%\n"
+            f"[Confidence] {int(signal.confidence * 100)}%\n"
             f"[Reasoning] {signal.signal_reasons[0] if signal.signal_reasons else 'N/A'}"
         )
+
 
     def render_enhanced_sidebar(self):
         """Enhanced sidebar with portfolio management"""
@@ -1984,6 +1985,7 @@ class EnhancedTradingBotApp:
 if __name__ == "__main__":
     app = EnhancedTradingBotApp()
     app.run()
+
 
 
 
