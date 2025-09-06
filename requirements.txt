@@ -1,8 +1,8 @@
-streamlit
-yfinance
-plotly
-talib-binary
-numpy
-pandas
-requests
-streamlit-autorefresh
+streamlit==1.49.1
+yfinance==0.2.65
+plotly==6.3.0
+talib-binary==0.4.19
+numpy==1.26.2
+pandas==2.1.1
+requests==2.31.0
+streamlit-autorefresh==0.1.2
