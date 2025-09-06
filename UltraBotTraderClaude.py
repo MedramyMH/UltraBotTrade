@@ -20,16 +20,7 @@ from scipy import stats
 from sklearn.preprocessing import StandardScaler
 import streamlit as st
 import requests
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
 
-# create session with retries
-session = requests.Session()
-retries = Retry(total=3, backoff_factor=1, status_forcelist=[500, 502, 503, 504])
-session.mount("https://", HTTPAdapter(max_retries=retries))
-
-# now you can call it
-response = session.get(url, timeout=10)
 
 
 
@@ -1973,6 +1964,7 @@ class EnhancedTradingBotApp:
 if __name__ == "__main__":
     app = EnhancedTradingBotApp()
     app.run()
+
 
 
 
