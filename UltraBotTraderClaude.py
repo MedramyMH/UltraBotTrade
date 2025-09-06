@@ -515,7 +515,7 @@ class SimpleTradingApp:
         min_confidence = st.sidebar.slider("Min Confidence (%)", 50, 90, 65) / 100
         
         # Auto refresh
-        refresh_sec = st.sidebar.slider("Auto-refresh (seconds)", 30, 300, 60, step=30)
+        refresh_sec = st.sidebar.slider("Auto-refresh (seconds)", 10, 300, 60, step=30)
         st_autorefresh(interval=refresh_sec * 1000, key="simple_auto_refresh")
         
         return {
@@ -566,3 +566,4 @@ class SimpleTradingApp:
 if __name__ == "__main__":
     app = SimpleTradingApp()
     app.run()
+
