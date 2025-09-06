@@ -19,6 +19,64 @@ from abc import ABC, abstractmethod
 from scipy import stats
 from sklearn.preprocessing import StandardScaler
 
+@staticmethod
+    def _calculate_regime_indicators(df: pd.DataFrame) -> Dict:
+        """Calculate regime-specific indicators with robust error handling"""
+        result = {}
+        
+        if len(df) < 50:
+            return result
+            
+        try:
+            close_prices = df['Close'].values
+            
+            # Trend persistence calculation
+            if len(close_prices) >= 20:
+                try:
+                    ma_20 = df['Close'].rolling(20, min_periods=10).mean()
+                    
+                    # Ensure we have valid data
+                    valid_ma = ma_20.dropna()
+                    valid_prices = close_prices[-len(valid_ma):] if len(valid_ma) > 0 else close_prices
+                    
+                    if len(valid_ma) > 0 and len(valid_prices) == len(valid_ma):
+                        above_ma = valid_prices > valid_ma.values
+                        
+                        # Count consecutive periods
+                        trend_persistence = 0
+                        if len(above_ma) > 0:
+                            current_trend = above_ma[-1]
+                            
+                            for i in range(len(above_ma) - 1, -1, -1):
+                                if above_ma[i] == current_trend:
+                                    trend_persistence += 1
+                                else:
+                                    break
+                        
+                        result['trend_persistence'] = trend_persistence
+                    else:
+                        result['trend_persistence'] = 0
+                        
+                except Exception as e:
+                    logger.debug(f"Trend persistence calculation failed: {e}")
+                    result['trend_persistence'] = 0
+            else:
+                result['trend_persistence'] = 0
+            
+            # Volatility clustering calculation
+            try:
+                returns = df['Close'].pct_change().dropna()
+                
+                if len(returns) > 40:  # Need sufficient data for rolling window
+                    vol_20 = returns.rolling(20, min_periods=10).std()
+                    valid_vol = vol_20.dropna()
+                    
+                    if len(valid_vol) > 2:
+                        # Calculate correlation between consecutive volatility periods
+                        vol_lag0 = valid_vol.iloc[:-1]
+                        vol_lag1 = valid_vol.iloc[1:]
+                        
+                        if lenimport streamlit as st
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -1864,4 +1922,5 @@ class EnhancedTradingBotApp:
 if __name__ == "__main__":
     app = EnhancedTradingBotApp()
     app.run()
+
 
