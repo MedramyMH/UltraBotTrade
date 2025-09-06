@@ -19,6 +19,15 @@ from abc import ABC, abstractmethod
 from scipy import stats
 from sklearn.preprocessing import StandardScaler
 import streamlit as st
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+
+session = requests.Session()
+retries = Retry(total=3, backoff_factor=1, status_forcelist=[500, 502, 503, 504])
+session.mount('https://', HTTPAdapter(max_retries=retries))
+
+response = session.get(url, timeout=10)
+
 
 st.set_page_config(
     page_title="ULTIMATE Trading AI - Pro Edition",
@@ -1339,7 +1348,7 @@ class PriceDataFetcher:
             if symbol.endswith("-USD"):
                 binance_symbol = symbol.replace("-USD", "USDT")
                 url = f"https://api.binance.com/api/v3/ticker/price?symbol={binance_symbol}"
-                response = requests.get(url, timeout=3)
+                response = requests.get(url, timeout=10)
                 if response.status_code == 200:
                     data = response.json()
                     return float(data['price'])
@@ -1960,6 +1969,7 @@ class EnhancedTradingBotApp:
 if __name__ == "__main__":
     app = EnhancedTradingBotApp()
     app.run()
+
 
 
 
