@@ -1277,7 +1277,7 @@ class EnhancedDataManager:
         """Assess the quality of market data"""
         return {
             'completeness': 1.0 - (df.isnull().sum().sum() / (len(df) * len(df.columns))),
-            'recency': (datetime.now() - df.index[-1]).seconds / 3600,  # Hours since last data
+            'recency': (datetime.now(timezone.utc) - df.index[-1]).total_seconds() / 3600,,  # Hours since last data
             'volume_consistency': df['Volume'].std() / df['Volume'].mean() if 'Volume' in df.columns else 0
         }
 
@@ -1960,6 +1960,7 @@ class EnhancedTradingBotApp:
 if __name__ == "__main__":
     app = EnhancedTradingBotApp()
     app.run()
+
 
 
 
