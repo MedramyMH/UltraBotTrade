@@ -18,7 +18,7 @@ import logging
 from abc import ABC, abstractmethod
 from scipy import stats
 from sklearn.preprocessing import StandardScaler
-
+import streamlit as st
 
 st.set_page_config(
     page_title="ULTIMATE Trading AI - Pro Edition",
@@ -1957,6 +1957,7 @@ class EnhancedTradingBotApp:
 if __name__ == "__main__":
     app = EnhancedTradingBotApp()
     app.run()
+
 
 
 
