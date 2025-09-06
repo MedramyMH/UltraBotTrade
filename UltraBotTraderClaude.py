@@ -515,7 +515,7 @@ class SimpleTradingApp:
         min_confidence = st.sidebar.slider("Min Confidence (%)", 50, 90, 65) / 100
         
         # Auto refresh
-        refresh_sec = st.sidebar.slider("Auto-refresh (seconds)", 10, 300, 60, step=30)
+        refresh_sec = st.sidebar.slider("Auto-refresh (seconds)", 30, 300, 60, step=30)
         st_autorefresh(interval=refresh_sec * 1000, key="simple_auto_refresh")
         
         return {
@@ -540,6 +540,7 @@ class SimpleTradingApp:
         
         # Generate signals
         signals = []
+        all_data = {}
         
         progress_bar = st.progress(0)
         for i, symbol in enumerate(config['symbols']):
@@ -548,7 +549,13 @@ class SimpleTradingApp:
             data = self.data_manager.get_market_data(symbol, '15m')
             if data:
                 signal = self.engine.generate_signal(symbol, data)
-                if signal.confidence >= config['min_confidence']:
+                all_data[symbol] = data  # Store data for WAIT signals
+                
+                if config['show_all_signals']:
+                    # Show all signals regardless of confidence
+                    signals.append((symbol, signal))
+                elif signal.confidence >= config['min_confidence']:
+                    # Only show high confidence signals
                     signals.append((symbol, signal))
         
         progress_bar.empty()
@@ -559,11 +566,20 @@ class SimpleTradingApp:
             signals.sort(key=lambda x: x[1].confidence, reverse=True)
             
             for symbol, signal in signals:
-                st.markdown(format_signal(symbol, signal))
+                if signal.confidence < config['min_confidence'] and config['show_all_signals']:
+                    # Show as WAIT signal if below confidence threshold
+                    current_price = all_data.get(symbol, {}).get('price', signal.market_price)
+                    st.markdown(format_wait_signal(symbol, current_price))
+                else:
+                    # Show regular signal
+                    st.markdown(format_signal(symbol, signal))
         else:
-            st.info("No signals meet the current criteria. Try lowering the minimum confidence.")
+            # Show WAIT signals for all assets when no signals meet criteria
+            for symbol in config['symbols']:
+                if symbol in all_data:
+                    current_price = all_data[symbol]['price']
+                    st.markdown(format_wait_signal(symbol, current_price))
 
 if __name__ == "__main__":
     app = SimpleTradingApp()
     app.run()
-
